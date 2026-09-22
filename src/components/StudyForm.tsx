@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { StudyFormData } from "../types/study";
+import type { StudyFormData } from "../types/Study";
 
 function StudyForm() {
   const [formData, setFormData] = useState<StudyFormData>({
@@ -11,10 +11,62 @@ function StudyForm() {
     total: 0,
     difficultTopics: "",
   });
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log(formData);
+    if (!formData.subject.trim()) {
+      alert("Please enter a subject.");
+      return;
+    }
+
+    if (!formData.deadline) {
+      alert("Please choose a deadline.");
+      return;
+    }
+
+    if (formData.hoursPerDay <= 0) {
+      alert("Hours per day must be greater than 0.");
+      return;
+    }
+
+    if (formData.completed > formData.total) {
+      alert("Completed material cannot be greater than total material.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/study-plan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      console.log("Backend response:", data);
+    } catch (error) {
+      console.error("Failed to connect to backend:", error);
+    }
+  };
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    setFormData({
+      ...formData,
+      [name]: Number(value),
+    });
   };
 
   return (
@@ -26,14 +78,10 @@ function StudyForm() {
 
         <input
           id="subject"
+          name="subject"
           type="text"
           value={formData.subject}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              subject: e.target.value,
-            })
-          }
+          onChange={handleChange}
           placeholder="e.g. Database Systems"
           className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-[#343044]"
         />
@@ -45,14 +93,10 @@ function StudyForm() {
 
         <input
           id="deadline"
+          name="deadline"
           type="date"
           value={formData.deadline}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              deadline: e.target.value,
-            })
-          }
+          onChange={handleChange}
           className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-[#343044]"
         />
       </div>
@@ -63,13 +107,9 @@ function StudyForm() {
 
         <textarea
           id="material"
+          name="material"
           value={formData.material}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              material: e.target.value,
-            })
-          }
+          onChange={handleChange}
           placeholder={"Chapter 1\nChapter 2\nChapter 3"}
           rows={5}
           className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-[#343044]"
@@ -83,16 +123,12 @@ function StudyForm() {
         <div className="flex items-center gap-3">
           <input
             id="hoursPerDay"
+            name="hoursPerDay"
             type="number"
             min="0"
             step="0.5"
             value={formData.hoursPerDay || ""}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                hoursPerDay: Number(e.target.value),
-              })
-            }
+            onChange={handleNumberChange}
             className="w-32 rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-[#343044]"
           />
 
@@ -106,30 +142,24 @@ function StudyForm() {
 
         <div className="flex items-center gap-3">
           <input
+            id="completed"
+            name="completed"
             type="number"
             min="0"
             value={formData.completed || ""}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                completed: Number(e.target.value),
-              })
-            }
+            onChange={handleNumberChange}
             className="w-24 rounded-xl border border-gray-300 bg-white px-4 py-3"
           />
 
           <span className="text-gray-600">out of</span>
 
           <input
+            id="total"
+            name="total"
             type="number"
             min="1"
             value={formData.total || ""}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                total: Number(e.target.value),
-              })
-            }
+            onChange={handleChange}
             className="w-24 rounded-xl border border-gray-300 bg-white px-4 py-3"
           />
 
@@ -146,14 +176,10 @@ function StudyForm() {
 
         <input
           id="difficultTopics"
+          name="difficultTopics"
           type="text"
           value={formData.difficultTopics}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              difficultTopics: e.target.value,
-            })
-          }
+          onChange={handleChange}
           placeholder="e.g. Normalization, Transactions"
           className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3"
         />

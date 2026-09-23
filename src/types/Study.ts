@@ -3,7 +3,6 @@ export interface StudyFormData {
   deadline: string;
   material: string;
   hoursPerDay: number;
-  completed: number;
-  total: number;
+  completedChapters: string[];
   difficultTopics: string;
 }

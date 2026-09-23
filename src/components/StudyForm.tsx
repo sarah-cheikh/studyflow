@@ -7,8 +7,7 @@ function StudyForm() {
     deadline: "",
     material: "",
     hoursPerDay: 0,
-    completed: 0,
-    total: 0,
+    completedChapters: [],
     difficultTopics: "",
   });
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -28,9 +27,8 @@ function StudyForm() {
       alert("Hours per day must be greater than 0.");
       return;
     }
-
-    if (formData.completed > formData.total) {
-      alert("Completed material cannot be greater than total material.");
+    if (!formData.material.trim()) {
+      alert("Please enter the chapters you need to study.");
       return;
     }
 
@@ -68,6 +66,23 @@ function StudyForm() {
       [name]: Number(value),
     });
   };
+  const handleChapterToggle = (chapter: string) => {
+    setFormData((prev) => {
+      const isCompleted = prev.completedChapters.includes(chapter);
+
+      return {
+        ...prev,
+        completedChapters:
+          isCompleted ?
+            prev.completedChapters.filter((item) => item !== chapter)
+          : [...prev.completedChapters, chapter],
+      };
+    });
+  };
+  const chapters = formData.material
+    .split("\n")
+    .map((chapter) => chapter.trim())
+    .filter(Boolean);
 
   return (
     <form onSubmit={handleSubmit}>
@@ -137,34 +152,28 @@ function StudyForm() {
       </div>
       <div className="mb-6">
         <label className="mb-2 block text-sm font-medium">
-          How much have you completed?
+          Which chapters have you completed?
         </label>
 
-        <div className="flex items-center gap-3">
-          <input
-            id="completed"
-            name="completed"
-            type="number"
-            min="0"
-            value={formData.completed || ""}
-            onChange={handleNumberChange}
-            className="w-24 rounded-xl border border-gray-300 bg-white px-4 py-3"
-          />
+        {chapters.length === 0 ?
+          <p className="text-sm text-gray-500">
+            Enter your chapters above first.
+          </p>
+        : <div className="space-y-3">
+            {chapters.map((chapter) => (
+              <label key={chapter} className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={formData.completedChapters.includes(chapter)}
+                  onChange={() => handleChapterToggle(chapter)}
+                  className="h-4 w-4"
+                />
 
-          <span className="text-gray-600">out of</span>
-
-          <input
-            id="total"
-            name="total"
-            type="number"
-            min="1"
-            value={formData.total || ""}
-            onChange={handleChange}
-            className="w-24 rounded-xl border border-gray-300 bg-white px-4 py-3"
-          />
-
-          <span className="text-gray-600">chapters</span>
-        </div>
+                <span>{chapter}</span>
+              </label>
+            ))}
+          </div>
+        }
       </div>
       <div className="mb-8">
         <label

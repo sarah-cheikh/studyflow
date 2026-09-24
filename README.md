@@ -2,17 +2,17 @@
 
 A small study-planning app that turns your study constraints — subject, deadline, available hours, and difficult topics — into a realistic, day-by-day study plan.
 
-You tell StudyFlow what you need to study and how much time you have. It generates a structured plan, split across days, with tasks you can check off as you go.
+StudyFlow combines a React frontend with an Express backend and Google's Gemini API to generate structured study plans based on the user's actual time and workload.
 
 ## Features
 
 - **Study form** — enter your subject, deadline, chapters/material, hours available per day, completed chapters, and difficult topics.
-- **AI-generated plan** — the backend sends your study data to Google's Gemini API, which returns a day-by-day plan that:
+- **AI study-plan generation** — the backend sends your study data to Google's Gemini API, which returns a day-by-day plan that:
   - paces itself across the actual number of days until your deadline
   - sizes each day's workload based on your available hours
   - gives difficult topics extra, dedicated review sessions
   - splits large chapters across multiple days when needed
-- **Local fallback** — if the AI call fails for any reason, the backend falls back to a simple local plan generator so you always get a usable plan.
+-- **AI + local fallback** — the backend validates the AI response and falls back to a local planning algorithm if the AI request fails or returns an invalid response.
 - **Progress tracking** — check off tasks as you complete them, with a live progress bar and a completion message when everything's done.
 - **Two-screen flow** — a clean form screen, then a dedicated plan screen with a "Regenerate plan" option to go back and adjust your inputs.
 
@@ -25,6 +25,7 @@ You tell StudyFlow what you need to study and how much time you have. It generat
 
 **Backend**
 - Node.js
+- TypeScript
 - Express
 - Google Gemini API (`@google/genai`) for plan generation
 
@@ -45,7 +46,7 @@ studyflow/
 │   │   ├── StudyForm.tsx
 │   │   └── StudyPlan.tsx
 │   ├── types/
-│   │   └── Study.ts            # Shared StudyFormData interface
+│   │   └── Study.ts            # StudyFormData interface
 │   ├── App.tsx
 │   ├── index.css
 │   └── main.tsx
@@ -80,7 +81,7 @@ cd backend
 npm install
 ```
 
-### 3. Get a free Gemini API key
+### 3. Configure a Gemini API key
 
 1. Go to [aistudio.google.com](https://aistudio.google.com)
 2. Sign in with a Google account
@@ -94,8 +95,6 @@ In `backend/`, create a file named `.env`:
 ```
 GEMINI_API_KEY=your-api-key-here
 ```
-
-> `.env` is already excluded via `.gitignore` — never commit your API key.
 
 ### 5. Run the app
 
@@ -153,4 +152,4 @@ User checks off tasks as they complete them
 
 ## Screenshots
 
-_Add screenshots of the form and plan screens here._
+

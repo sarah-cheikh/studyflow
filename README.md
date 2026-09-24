@@ -1,75 +1,156 @@
-# React + TypeScript + Vite
+# 🌱 StudyFlow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A small study-planning app that turns your study constraints — subject, deadline, available hours, and difficult topics — into a realistic, day-by-day study plan.
 
-Currently, two official plugins are available:
+You tell StudyFlow what you need to study and how much time you have. It generates a structured plan, split across days, with tasks you can check off as you go.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- **Study form** — enter your subject, deadline, chapters/material, hours available per day, completed chapters, and difficult topics.
+- **AI-generated plan** — the backend sends your study data to Google's Gemini API, which returns a day-by-day plan that:
+  - paces itself across the actual number of days until your deadline
+  - sizes each day's workload based on your available hours
+  - gives difficult topics extra, dedicated review sessions
+  - splits large chapters across multiple days when needed
+- **Local fallback** — if the AI call fails for any reason, the backend falls back to a simple local plan generator so you always get a usable plan.
+- **Progress tracking** — check off tasks as you complete them, with a live progress bar and a completion message when everything's done.
+- **Two-screen flow** — a clean form screen, then a dedicated plan screen with a "Regenerate plan" option to go back and adjust your inputs.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech stack
 
-## Expanding the ESLint configuration
+**Frontend**
+- React + TypeScript
+- Vite
+- Tailwind CSS
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+**Backend**
+- Node.js
+- Express
+- Google Gemini API (`@google/genai`) for plan generation
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Project structure
 
 ```
+studyflow/
+├── backend/
+│   ├── src/
+│   │   ├── server.ts          # Express server + AI integration
+│   │   └── studyPlanner.ts    # Local fallback plan generator
+│   ├── .env                   # GEMINI_API_KEY (not committed)
+│   └── package.json
+│
+├── src/
+│   ├── components/
+│   │   ├── Header.tsx
+│   │   ├── StudyForm.tsx
+│   │   └── StudyPlan.tsx
+│   ├── types/
+│   │   └── Study.ts            # Shared StudyFormData interface
+│   ├── App.tsx
+│   ├── index.css
+│   └── main.tsx
+│
+├── public/
+├── index.html
+├── package.json
+└── vite.config.ts
+```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+## Setup
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 1. Clone the repo
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone <your-repo-url>
+cd studyflow
+```
+
+### 2. Install dependencies
+
+Frontend (from the project root):
+
+```bash
+npm install
+```
+
+Backend:
+
+```bash
+cd backend
+npm install
+```
+
+### 3. Get a free Gemini API key
+
+1. Go to [aistudio.google.com](https://aistudio.google.com)
+2. Sign in with a Google account
+3. Click **Get API key** → **Create API key**
+4. Copy the key
+
+### 4. Set up environment variables
+
+In `backend/`, create a file named `.env`:
 
 ```
+GEMINI_API_KEY=your-api-key-here
+```
+
+> `.env` is already excluded via `.gitignore` — never commit your API key.
+
+### 5. Run the app
+
+You need both servers running at the same time, in two separate terminals.
+
+**Terminal 1 — backend:**
+
+```bash
+cd backend
+npm run dev
+```
+
+You should see `Server running on http://localhost:5000`.
+
+**Terminal 2 — frontend:**
+
+```bash
+npm run dev
+```
+
+Open the URL Vite prints (usually `http://localhost:5173`).
+
+## How it works
+
+```
+User fills out the form
+        ↓
+StudyFormData sent to the backend
+        ↓
+Backend prompts Gemini for a structured JSON plan
+        ↓
+Response is validated (shape-checked) before use
+        ↓
+    succeeds ──► AI-generated plan
+    fails    ──► local fallback plan (generateStudyPlan)
+        ↓
+Plan rendered on the Study Plan screen
+        ↓
+User checks off tasks as they complete them
+```
+
+## Known limitations
+
+- **No persistence** — refreshing the page loses your current plan and checked-off progress. There's no database or backend storage yet.
+- **No authentication or accounts** — this is a single-session, local-use app.
+- **Local development only** — not yet deployed; both servers must be run locally.
+- **AI output isn't guaranteed** — the backend validates the shape of the AI's response and falls back to a simpler local plan if anything goes wrong (bad response, network issue, rate limit), so plan quality can vary between AI-generated and fallback plans.
+
+## Possible future improvements
+
+- Persist plans and progress (localStorage or a real backend database)
+- Deploy the frontend and backend so it's usable outside of local development
+- Allow editing a generated plan directly (reorder tasks, add/remove days)
+- Show which plan source was used (AI vs. fallback) in the UI
+
+## Screenshots
+
+_Add screenshots of the form and plan screens here._

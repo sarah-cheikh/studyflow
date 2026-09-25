@@ -154,8 +154,6 @@ User checks off tasks as they complete them
 
 ## Screenshots
 
-Screenshots live in the `screenshots/` folder at the project root.
-
 **Form**
 
 Desktop (wide screen — form + pull-quote side by side):

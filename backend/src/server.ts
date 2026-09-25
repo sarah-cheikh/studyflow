@@ -95,13 +95,13 @@ You MUST actually use every field below — do not just list chapters one-per-da
 
 4. COMPLETED CHAPTERS: Skip anything in "completedChapters" entirely — do not schedule it again.
 
-5. SUMMARY: Write 2-4 sentences (not one generic line) that state: (a) how many days are available vs. how many you used, (b) which specific topics got extra attention and why, (c) roughly how the workload is paced across hoursPerDay.
+5. SUMMARY: Write ONE short, plain, encouraging sentence. Do NOT restate the day count, hour calculations, or list every difficult topic by name — that reasoning should only shape the days array, not appear in the summary text.
 
 6. NEVER invent chapter content, subtopics, or section titles that the student didn't provide. If you don't know what's actually inside a chapter, don't guess or describe it — just reference the chapter by its given name and use generic task verbs like "Study", "Review", "Practice exercises for".
 
 Respond with ONLY valid JSON, no markdown code fences, no commentary, matching exactly this shape:
 {
-  "summary": "2-4 sentences covering pacing, day count, and which difficult topics got extra time and why",
+  "summary": "one short, encouraging sentence — no pacing details, day counts, or topic lists",
   "days": [
     { "day": 1, "tasks": ["task 1", "task 2"] }
   ]
@@ -122,15 +122,12 @@ Respond with ONLY valid JSON, no markdown code fences, no commentary, matching e
     throw new Error("AI response contained no text content.");
   }
 
-  // Strip ```json fences in case the model adds them despite instructions.
   const cleaned = text.replace(/```json|```/g, "").trim();
 
   let parsed: unknown;
   try {
     parsed = JSON.parse(cleaned);
   } catch {
-    // Log the raw text so a truncated/malformed response is visible
-    // in the server logs even though the user just sees the fallback plan.
     console.error("Raw AI text that failed to parse:", text);
     throw new Error("AI response was not valid JSON.");
   }
